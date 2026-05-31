@@ -42,6 +42,22 @@ local function isUUID(name)
     return string.match(name, "^%x+%-%x+%-%x+%-%x+%-%x+$") ~= nil
 end
 
+-- Normalise a Worlds entry (number OR array of numbers) into a flat array.
+-- Allows entries like {5.0, 8.8} to group size-variant enemies (Giant, Tiny, etc.)
+-- under one name without changing how single-value entries work.
+local function toBoundsArray(v)
+    if type(v) == "number" then return {v} end
+    if type(v) == "table"  then return v   end
+    return {}
+end
+
+local function boundsMatches(b, target)
+    for _, v in ipairs(toBoundsArray(target)) do
+        if math.abs(b - v) < 1 then return true end
+    end
+    return false
+end
+
 -- markerText patterns per world for waystone NPC detection
 local WorldMarkers = {
     ["Rain Village"] = { "Rain", "Rosha" },
@@ -53,8 +69,8 @@ local WorldMarkers = {
 
 local function isKnownBounds(b)
     for _, enemies in pairs(Worlds) do
-        for _, known in pairs(enemies) do
-            if math.abs(b - known) <= 1 then return true end
+        for _, entry in pairs(enemies) do
+            if boundsMatches(b, entry) then return true end
         end
     end
     return false
@@ -84,7 +100,7 @@ local function getWeakestOfType(targetBounds)
             local hrp = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChildOfClass("BasePart")
             if dead ~= true and hrp then
                 local b = getBoundsFirst(obj)
-                if math.abs(b - targetBounds) < 1 then
+                if boundsMatches(b, targetBounds) then
                     local humanoid = obj:FindFirstChildOfClass("Humanoid")
                     local score = humanoid and humanoid.MaxHealth
                         or (hrp.Position - root.Position).Magnitude
@@ -517,8 +533,10 @@ enemyBtn.MouseButton1Click:Connect(function()
 
         local mappedBounds = {}
         if selectedWorld and Worlds[selectedWorld] then
-            for _, b in pairs(Worlds[selectedWorld]) do
-                mappedBounds[string.format("%.1f", b)] = true
+            for _, entry in pairs(Worlds[selectedWorld]) do
+                for _, v in ipairs(toBoundsArray(entry)) do
+                    mappedBounds[string.format("%.1f", v)] = true
+                end
             end
         end
 
@@ -594,13 +612,18 @@ local function detectWorld()
     for worldName, enemies in pairs(Worlds) do
         if next(enemies) then
             local score = 0
-            for _, knownBounds in pairs(enemies) do
-                for key in pairs(ScannedEnemies) do
-                    if math.abs((tonumber(key) or 0) - knownBounds) <= 1 then
-                        score = score + 1
-                        break
+            for _, entry in pairs(enemies) do
+                local matched = false
+                for _, knownB in ipairs(toBoundsArray(entry)) do
+                    for key in pairs(ScannedEnemies) do
+                        if math.abs((tonumber(key) or 0) - knownB) <= 1 then
+                            matched = true
+                            break
+                        end
                     end
+                    if matched then break end
                 end
+                if matched then score += 1 end
             end
             if score > bestScore then
                 bestScore = score
