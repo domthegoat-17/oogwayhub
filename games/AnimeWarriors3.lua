@@ -106,11 +106,19 @@ local function scanWorkspace()
 end
 
 -- GUI
+local guiParent
+if typeof(gethui) == "function" then
+    guiParent = gethui()
+else
+    local ok, cg = pcall(game.GetService, game, "CoreGui")
+    guiParent = ok and cg or player.PlayerGui
+end
+
 local sg = Instance.new("ScreenGui")
 sg.Name = "OogwayHub"
 sg.ResetOnSpawn = false
 sg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-sg.Parent = game:GetService("CoreGui")
+sg.Parent = guiParent
 
 local main = Instance.new("Frame", sg)
 main.Size = UDim2.new(0, 200, 0, 260)

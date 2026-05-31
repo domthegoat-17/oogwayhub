@@ -1,1 +1,7 @@
-loadstring(game:HttpGet("https://raw.githubusercontent.com/domthegoat-17/oogwayhub/main/games/AnimeWarriors3.lua"))()
+local url = "https://raw.githubusercontent.com/domthegoat-17/oogwayhub/main/games/AnimeWarriors3.lua"
+local ok, err = pcall(function()
+    loadstring(game:HttpGet(url))()
+end)
+if not ok then
+    warn("[OogwayHub] Load error: " .. tostring(err))
+end
