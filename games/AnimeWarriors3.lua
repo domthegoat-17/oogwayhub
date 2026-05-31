@@ -190,7 +190,7 @@ Instance.new("UIListLayout", sidePanel).SortOrder = Enum.SortOrder.LayoutOrder
 
 -- Identifier overlay (bottom-left, toggled by ID button)
 local idOverlay = Instance.new("Frame", sg)
-idOverlay.Size = UDim2.new(0, 185, 0, 90)
+idOverlay.Size = UDim2.new(0, 300, 0, 90)
 idOverlay.Position = UDim2.new(0, 10, 1, -105)
 idOverlay.BackgroundColor3 = Color3.fromRGB(18, 22, 32)
 idOverlay.BackgroundTransparency = 0.1
@@ -540,18 +540,40 @@ enemyBtn.MouseButton1Click:Connect(function()
             end
         end
 
-        for key, count in pairs(ScannedEnemies) do
-            local b = tonumber(key)
-            if b and not mappedBounds[key] and not isKnownBounds(b) then
-                hasItems = true
-                local label = "? b=" .. key .. " x" .. count
-                makeSideItem(label, function()
-                    selectedEnemy = label
-                    selectedBounds = b
-                    enemyBtn.Text = label
-                    closeSide()
-                end)
+        -- Group unknown enemies by model name (UUID) so size variants (Giant/Tiny) collapse into one entry
+        local nameGroups = {}
+        for _, obj in pairs(workspace:GetDescendants()) do
+            if isEnemyModel(obj) and obj:GetAttribute("dead") ~= true then
+                local b = getBoundsFirst(obj)
+                local key = string.format("%.1f", b)
+                if not mappedBounds[key] and not isKnownBounds(b) then
+                    local n = obj.Name
+                    if not nameGroups[n] then
+                        nameGroups[n] = { boundsSet = {}, boundsArr = {}, count = 0 }
+                    end
+                    nameGroups[n].count += 1
+                    if not nameGroups[n].boundsSet[key] then
+                        nameGroups[n].boundsSet[key] = true
+                        table.insert(nameGroups[n].boundsArr, b)
+                    end
+                end
             end
+        end
+
+        for _, group in pairs(nameGroups) do
+            hasItems = true
+            local parts = {}
+            for _, v in ipairs(group.boundsArr) do
+                table.insert(parts, string.format("%.1f", v))
+            end
+            local label = "? b=" .. table.concat(parts, "/") .. " x" .. group.count
+            local boundsCapture = group.boundsArr
+            makeSideItem(label, function()
+                selectedEnemy = label
+                selectedBounds = #boundsCapture == 1 and boundsCapture[1] or boundsCapture
+                enemyBtn.Text = label
+                closeSide()
+            end)
         end
 
         if not hasItems then
@@ -759,7 +781,6 @@ task.spawn(function()
         if nearest then
             local b = getBoundsFirst(nearest)
             local nameStr = nearest.Name
-            if #nameStr > 20 then nameStr = nameStr:sub(1, 18) .. ".." end
             local count = 0
             for _, obj in pairs(workspace:GetDescendants()) do
                 if isEnemyModel(obj) and math.abs(getBoundsFirst(obj) - b) < 1 then
