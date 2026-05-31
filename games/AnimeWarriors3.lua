@@ -11,6 +11,7 @@ local gauntletFarm = false
 local selectedEnemy = nil
 local selectedBounds = nil
 local selectedWorld = nil
+local currentWorld = nil
 local ScannedEnemies = {}
 local lastScanPos = nil
 
@@ -33,6 +34,15 @@ local function isUUID(name)
     return string.match(name, "^%x+%-%x+%-%x+%-%x+%-%x+$") ~= nil
 end
 
+-- markerText patterns per world for waystone NPC detection
+local WorldMarkers = {
+    ["Rain Village"] = { "Rain", "Rosha" },
+    ["Future City"]  = { "Future", "Trunko" },
+    ["Sand Village"] = { "Sand" },
+    ["Sky Island"]   = { "Sky" },
+    ["Planet Nemak"] = { "Nemak" },
+}
+
 local function isKnownBounds(b)
     for _, enemies in pairs(Worlds) do
         for _, known in pairs(enemies) do
@@ -48,13 +58,19 @@ local function getBoundsFirst(obj)
     return tonumber(tostring(bounds):match("^([%d%.]+)")) or 0
 end
 
+local function isEnemyModel(obj)
+    if not obj:IsA("Model") then return false end
+    if getBoundsFirst(obj) <= 0 then return false end
+    return isUUID(obj.Name) or obj:FindFirstChildOfClass("Humanoid") ~= nil
+end
+
 local function getNearestOfType(targetBounds)
     local char = player.Character
     if not char or not char:FindFirstChild("HumanoidRootPart") then return nil end
     local root = char.HumanoidRootPart
     local nearest, nearestDist = nil, math.huge
     for _, obj in pairs(workspace:GetDescendants()) do
-        if obj:IsA("Model") and isUUID(obj.Name) then
+        if isEnemyModel(obj) then
             local dead = obj:GetAttribute("dead")
             local hrp = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChildOfClass("BasePart")
             if dead == false and hrp then
@@ -78,7 +94,7 @@ local function getNearestAlive()
     local root = char.HumanoidRootPart
     local nearest, nearestDist = nil, math.huge
     for _, obj in pairs(workspace:GetDescendants()) do
-        if obj:IsA("Model") and isUUID(obj.Name) then
+        if isEnemyModel(obj) then
             local dead = obj:GetAttribute("dead")
             local hrp = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChildOfClass("BasePart")
             if dead == false and hrp then
@@ -96,14 +112,12 @@ end
 local function scanWorkspace()
     local found = {}
     for _, obj in pairs(workspace:GetDescendants()) do
-        if obj:IsA("Model") and isUUID(obj.Name) then
+        if isEnemyModel(obj) then
             local dead = obj:GetAttribute("dead")
             if dead ~= true then
                 local b = getBoundsFirst(obj)
-                if b > 0 then
-                    local key = string.format("%.1f", b)
-                    found[key] = (found[key] or 0) + 1
-                end
+                local key = string.format("%.1f", b)
+                found[key] = (found[key] or 0) + 1
             end
         end
     end
@@ -473,6 +487,28 @@ gauntletBtn.MouseButton1Click:Connect(function()
     gauntletBtn.Text = gauntletFarm and "Gauntlet: ON" or "Gauntlet: OFF"
 end)
 
+local function detectCurrentWorld()
+    for _, obj in pairs(workspace:GetDescendants()) do
+        local markerText = obj:GetAttribute("markerText")
+        if markerText then
+            markerText = tostring(markerText)
+            for worldName, patterns in pairs(WorldMarkers) do
+                for _, pattern in ipairs(patterns) do
+                    if string.find(markerText, pattern, 1, true) then
+                        currentWorld = worldName
+                        return
+                    end
+                end
+            end
+        end
+        if obj.Name == "RoshaWaystone" then
+            currentWorld = "Rain Village"
+            return
+        end
+    end
+    currentWorld = nil
+end
+
 local function detectWorld()
     local bestWorld, bestScore = nil, 0
     for worldName, enemies in pairs(Worlds) do
@@ -518,6 +554,7 @@ task.spawn(function()
             end
             if shouldScan then
                 scanWorkspace()
+                detectCurrentWorld()
                 if not selectedWorld then
                     detectWorld()
                 end
@@ -526,6 +563,13 @@ task.spawn(function()
         end
     end
 end)
+
+-- Re-detect world on character respawn
+local function onCharacterAdded()
+    task.wait(3)
+    detectCurrentWorld()
+end
+player.CharacterAdded:Connect(onCharacterAdded)
 
 -- Farm loop
 task.spawn(function()
@@ -537,7 +581,10 @@ task.spawn(function()
         if gauntletFarm then
             enemy = getNearestAlive()
         elseif autoFarm and selectedBounds then
-            enemy = getNearestOfType(selectedBounds)
+            local worldOk = currentWorld == nil or currentWorld == selectedWorld
+            if worldOk then
+                enemy = getNearestOfType(selectedBounds)
+            end
         end
         if enemy then
             local hrp = enemy:FindFirstChild("HumanoidRootPart") or enemy:FindFirstChildOfClass("BasePart")
