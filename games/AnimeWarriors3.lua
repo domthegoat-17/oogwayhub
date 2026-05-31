@@ -5,6 +5,9 @@ local player = Players.LocalPlayer
 local TELEPORT_RANGE = 6
 local SCAN_THRESHOLD = 200
 local TELEPORT_DETECT = 50
+local MAX_DUMMY_HP = 1e8       -- skip invincible/infinite-HP targets like DPS dummies
+local STUCK_TIMEOUT = 8        -- seconds on the same target before blacklisting it
+local BLACKLIST_DURATION = 30  -- seconds a stuck target stays blacklisted
 
 local autoFarm = false
 local gauntletFarm = false
@@ -14,6 +17,9 @@ local selectedWorld = nil
 local currentWorld = nil
 local ScannedEnemies = {}
 local lastScanPos = nil
+local gauntletBlacklist = {}   -- { [obj] = os.clock() expiry }
+local gauntletLastTarget = nil
+local gauntletStuckTime = 0
 
 local Worlds = {
     ["Rain Village"] = {
@@ -98,10 +104,12 @@ local function getNearestAlive()
     local root = char.HumanoidRootPart
     local nearest, nearestDist = nil, math.huge
     for _, obj in pairs(workspace:GetDescendants()) do
-        if isEnemyModel(obj) then
+        if isEnemyModel(obj) and not gauntletBlacklist[obj] then
             local dead = obj:GetAttribute("dead")
             local hrp = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChildOfClass("BasePart")
             if dead ~= true and hrp then
+                local humanoid = obj:FindFirstChildOfClass("Humanoid")
+                if humanoid and humanoid.MaxHealth >= MAX_DUMMY_HP then continue end
                 local dist = (hrp.Position - root.Position).Magnitude
                 if dist < nearestDist then
                     nearest = obj
@@ -589,7 +597,29 @@ task.spawn(function()
         if not char or not char:FindFirstChild("HumanoidRootPart") then continue end
         local enemy = nil
         if gauntletFarm then
+            -- Expire blacklist entries
+            local now = os.clock()
+            for obj, expiry in pairs(gauntletBlacklist) do
+                if now >= expiry then gauntletBlacklist[obj] = nil end
+            end
             enemy = getNearestAlive()
+            if enemy then
+                if enemy == gauntletLastTarget then
+                    gauntletStuckTime += 0.1
+                    if gauntletStuckTime >= STUCK_TIMEOUT then
+                        gauntletBlacklist[enemy] = os.clock() + BLACKLIST_DURATION
+                        gauntletLastTarget = nil
+                        gauntletStuckTime = 0
+                        enemy = nil
+                    end
+                else
+                    gauntletLastTarget = enemy
+                    gauntletStuckTime = 0
+                end
+            else
+                gauntletLastTarget = nil
+                gauntletStuckTime = 0
+            end
         elseif autoFarm and selectedBounds then
             local worldOk = currentWorld == nil or currentWorld == selectedWorld
             if worldOk then
