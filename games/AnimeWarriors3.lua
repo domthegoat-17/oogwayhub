@@ -167,7 +167,7 @@ main.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         dragging = true
         dragStart = input.Position
-        startPos = main.Position
+        startPos = main.AbsolutePosition
         input.Changed:Connect(function()
             if input.UserInputState == Enum.UserInputState.End then
                 dragging = false
@@ -178,7 +178,7 @@ end)
 UserInputService.InputChanged:Connect(function(input)
     if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
         local delta = input.Position - dragStart
-        main.Position = UDim2.new(0, startPos.X.Offset + delta.X, 0, startPos.Y.Offset + delta.Y)
+        main.Position = UDim2.new(0, startPos.X + delta.X, 0, startPos.Y + delta.Y)
         if sidePanel.Visible and activeBtn then
             local absPos = activeBtn.AbsolutePosition
             local absSize = activeBtn.AbsoluteSize
