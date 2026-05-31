@@ -106,8 +106,11 @@ local function scanWorkspace()
 end
 
 -- GUI
-local sg = Instance.new("ScreenGui", player.PlayerGui)
+local sg = Instance.new("ScreenGui")
 sg.Name = "OogwayHub"
+sg.ResetOnSpawn = false
+sg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+sg.Parent = game:GetService("CoreGui")
 
 local main = Instance.new("Frame", sg)
 main.Size = UDim2.new(0, 200, 0, 260)
