@@ -33,6 +33,15 @@ local function isUUID(name)
     return string.match(name, "^%x+%-%x+%-%x+%-%x+%-%x+$") ~= nil
 end
 
+local function isKnownBounds(b)
+    for _, enemies in pairs(Worlds) do
+        for _, known in pairs(enemies) do
+            if math.abs(b - known) <= 1 then return true end
+        end
+    end
+    return false
+end
+
 local function getBoundsFirst(obj)
     local bounds = obj:GetAttribute("bounds")
     if not bounds then return 0 end
@@ -387,6 +396,8 @@ worldBtn.MouseButton1Click:Connect(function()
                 selectedEnemy = nil
                 selectedBounds = nil
                 enemyBtn.Text = "Select Enemy"
+                ScannedEnemies = {}
+                lastScanPos = nil
                 closeSide()
             end)
         end
@@ -418,13 +429,13 @@ enemyBtn.MouseButton1Click:Connect(function()
         end
 
         for key, count in pairs(ScannedEnemies) do
-            if not mappedBounds[key] then
+            local b = tonumber(key)
+            if b and not mappedBounds[key] and not isKnownBounds(b) then
                 hasItems = true
                 local label = "? b=" .. key .. " x" .. count
-                local bval = tonumber(key)
                 makeSideItem(label, function()
                     selectedEnemy = label
-                    selectedBounds = bval
+                    selectedBounds = b
                     enemyBtn.Text = label
                     closeSide()
                 end)
@@ -462,6 +473,31 @@ gauntletBtn.MouseButton1Click:Connect(function()
     gauntletBtn.Text = gauntletFarm and "Gauntlet: ON" or "Gauntlet: OFF"
 end)
 
+local function detectWorld()
+    local bestWorld, bestScore = nil, 0
+    for worldName, enemies in pairs(Worlds) do
+        if next(enemies) then
+            local score = 0
+            for _, knownBounds in pairs(enemies) do
+                for key in pairs(ScannedEnemies) do
+                    if math.abs((tonumber(key) or 0) - knownBounds) <= 1 then
+                        score = score + 1
+                        break
+                    end
+                end
+            end
+            if score > bestScore then
+                bestScore = score
+                bestWorld = worldName
+            end
+        end
+    end
+    if bestWorld and bestScore >= 2 then
+        selectedWorld = bestWorld
+        worldBtn.Text = bestWorld
+    end
+end
+
 -- Scan monitor (triggers on join, distance travel, and teleport detection)
 task.spawn(function()
     local lastPos = nil
@@ -470,14 +506,21 @@ task.spawn(function()
         local char = player.Character
         if char and char:FindFirstChild("HumanoidRootPart") then
             local pos = char.HumanoidRootPart.Position
+            local shouldScan = false
             if lastPos then
                 local delta = (pos - lastPos).Magnitude
                 local scanDist = lastScanPos and (pos - lastScanPos).Magnitude or math.huge
                 if delta > TELEPORT_DETECT or scanDist > SCAN_THRESHOLD then
-                    scanWorkspace()
+                    shouldScan = true
                 end
             else
+                shouldScan = true
+            end
+            if shouldScan then
                 scanWorkspace()
+                if not selectedWorld then
+                    detectWorld()
+                end
             end
             lastPos = pos
         end
