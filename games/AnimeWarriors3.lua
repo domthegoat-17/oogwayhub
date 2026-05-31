@@ -24,6 +24,7 @@ local Worlds = {
         ["Paper Angel"]   = 18,
         ["Deva"]          = 24,
     },
+    -- TODO: Future City enemies need manual mapping (use identifier tool to get bounds values per enemy name)
     ["Future City"]  = {},
     ["Sand Village"] = {},
     ["Sky Island"]   = {},
@@ -60,32 +61,35 @@ end
 
 local function isEnemyModel(obj)
     if not obj:IsA("Model") then return false end
-    if getBoundsFirst(obj) <= 0 then return false end
-    return isUUID(obj.Name) or obj:FindFirstChildOfClass("Humanoid") ~= nil
+    return getBoundsFirst(obj) > 0
 end
 
-local function getNearestOfType(targetBounds)
+-- Picks the alive enemy matching targetBounds with the lowest MaxHealth (basic over boss).
+-- Falls back to nearest distance when MaxHealth is unavailable.
+local function getWeakestOfType(targetBounds)
     local char = player.Character
     if not char or not char:FindFirstChild("HumanoidRootPart") then return nil end
     local root = char.HumanoidRootPart
-    local nearest, nearestDist = nil, math.huge
+    local best, bestScore = nil, math.huge
     for _, obj in pairs(workspace:GetDescendants()) do
         if isEnemyModel(obj) then
             local dead = obj:GetAttribute("dead")
             local hrp = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChildOfClass("BasePart")
-            if dead == false and hrp then
+            if dead ~= true and hrp then
                 local b = getBoundsFirst(obj)
                 if math.abs(b - targetBounds) < 1 then
-                    local dist = (hrp.Position - root.Position).Magnitude
-                    if dist < nearestDist then
-                        nearest = obj
-                        nearestDist = dist
+                    local humanoid = obj:FindFirstChildOfClass("Humanoid")
+                    local score = humanoid and humanoid.MaxHealth
+                        or (hrp.Position - root.Position).Magnitude
+                    if score < bestScore then
+                        best = obj
+                        bestScore = score
                     end
                 end
             end
         end
     end
-    return nearest
+    return best
 end
 
 local function getNearestAlive()
@@ -97,7 +101,7 @@ local function getNearestAlive()
         if isEnemyModel(obj) then
             local dead = obj:GetAttribute("dead")
             local hrp = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChildOfClass("BasePart")
-            if dead == false and hrp then
+            if dead ~= true and hrp then
                 local dist = (hrp.Position - root.Position).Magnitude
                 if dist < nearestDist then
                     nearest = obj
@@ -589,7 +593,7 @@ task.spawn(function()
         elseif autoFarm and selectedBounds then
             local worldOk = currentWorld == nil or currentWorld == selectedWorld
             if worldOk then
-                enemy = getNearestOfType(selectedBounds)
+                enemy = getWeakestOfType(selectedBounds)
             end
         end
         if enemy then
