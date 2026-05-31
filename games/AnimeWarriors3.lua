@@ -190,8 +190,8 @@ Instance.new("UIListLayout", sidePanel).SortOrder = Enum.SortOrder.LayoutOrder
 
 -- Identifier overlay (bottom-left, toggled by ID button)
 local idOverlay = Instance.new("Frame", sg)
-idOverlay.Size = UDim2.new(0, 300, 0, 90)
-idOverlay.Position = UDim2.new(0, 10, 1, -105)
+idOverlay.Size = UDim2.new(0, 600, 0, 160)
+idOverlay.Position = UDim2.new(0, 10, 1, -175)
 idOverlay.BackgroundColor3 = Color3.fromRGB(18, 22, 32)
 idOverlay.BackgroundTransparency = 0.1
 idOverlay.BorderSizePixel = 0
@@ -199,42 +199,42 @@ idOverlay.Visible = false
 Instance.new("UICorner", idOverlay).CornerRadius = UDim.new(0, 8)
 
 local idHeader = Instance.new("TextLabel", idOverlay)
-idHeader.Size = UDim2.new(1, -10, 0, 20)
-idHeader.Position = UDim2.new(0, 8, 0, 5)
+idHeader.Size = UDim2.new(1, -16, 0, 32)
+idHeader.Position = UDim2.new(0, 12, 0, 8)
 idHeader.BackgroundTransparency = 1
 idHeader.TextColor3 = Color3.fromRGB(100, 160, 255)
 idHeader.Font = Enum.Font.GothamBold
-idHeader.TextSize = 11
+idHeader.TextSize = 18
 idHeader.TextXAlignment = Enum.TextXAlignment.Left
 idHeader.Text = "IDENTIFIER — nearest enemy"
 
 local idBoundsLabel = Instance.new("TextLabel", idOverlay)
-idBoundsLabel.Size = UDim2.new(1, -10, 0, 18)
-idBoundsLabel.Position = UDim2.new(0, 8, 0, 26)
+idBoundsLabel.Size = UDim2.new(1, -16, 0, 30)
+idBoundsLabel.Position = UDim2.new(0, 12, 0, 42)
 idBoundsLabel.BackgroundTransparency = 1
 idBoundsLabel.TextColor3 = Color3.new(1, 1, 1)
 idBoundsLabel.Font = Enum.Font.Gotham
-idBoundsLabel.TextSize = 11
+idBoundsLabel.TextSize = 18
 idBoundsLabel.TextXAlignment = Enum.TextXAlignment.Left
 idBoundsLabel.Text = "bounds:  —"
 
 local idNameLabel = Instance.new("TextLabel", idOverlay)
-idNameLabel.Size = UDim2.new(1, -10, 0, 18)
-idNameLabel.Position = UDim2.new(0, 8, 0, 44)
+idNameLabel.Size = UDim2.new(1, -16, 0, 30)
+idNameLabel.Position = UDim2.new(0, 12, 0, 74)
 idNameLabel.BackgroundTransparency = 1
 idNameLabel.TextColor3 = Color3.new(1, 1, 1)
 idNameLabel.Font = Enum.Font.Gotham
-idNameLabel.TextSize = 11
+idNameLabel.TextSize = 18
 idNameLabel.TextXAlignment = Enum.TextXAlignment.Left
 idNameLabel.Text = "name:     —"
 
 local idCountLabel = Instance.new("TextLabel", idOverlay)
-idCountLabel.Size = UDim2.new(1, -10, 0, 18)
-idCountLabel.Position = UDim2.new(0, 8, 0, 62)
+idCountLabel.Size = UDim2.new(1, -16, 0, 30)
+idCountLabel.Position = UDim2.new(0, 12, 0, 116)
 idCountLabel.BackgroundTransparency = 1
-idCountLabel.TextColor3 = Color3.fromRGB(140, 220, 140)
+idCountLabel.TextColor3 = Color3.fromRGB(220, 80, 80)
 idCountLabel.Font = Enum.Font.Gotham
-idCountLabel.TextSize = 11
+idCountLabel.TextSize = 18
 idCountLabel.TextXAlignment = Enum.TextXAlignment.Left
 idCountLabel.Text = "on map:  0"
 
