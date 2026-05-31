@@ -162,23 +162,29 @@ Instance.new("UIListLayout", sidePanel).SortOrder = Enum.SortOrder.LayoutOrder
 local activeBtn = nil
 
 -- Drag
-local dragging, dragStart, startPos
+local dragging = false
+local dragPrev = nil
 main.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         dragging = true
-        dragStart = input.Position
-        startPos = main.AbsolutePosition
+        dragPrev = Vector2.new(input.Position.X, input.Position.Y)
         input.Changed:Connect(function()
             if input.UserInputState == Enum.UserInputState.End then
                 dragging = false
+                dragPrev = nil
             end
         end)
     end
 end)
 UserInputService.InputChanged:Connect(function(input)
-    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-        local delta = input.Position - dragStart
-        main.Position = UDim2.new(0, startPos.X + delta.X, 0, startPos.Y + delta.Y)
+    if dragging and dragPrev and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local dx = input.Position.X - dragPrev.X
+        local dy = input.Position.Y - dragPrev.Y
+        dragPrev = Vector2.new(input.Position.X, input.Position.Y)
+        main.Position = UDim2.new(
+            main.Position.X.Scale, main.Position.X.Offset + dx,
+            main.Position.Y.Scale, main.Position.Y.Offset + dy
+        )
         if sidePanel.Visible and activeBtn then
             local absPos = activeBtn.AbsolutePosition
             local absSize = activeBtn.AbsoluteSize
