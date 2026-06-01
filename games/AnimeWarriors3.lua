@@ -36,7 +36,12 @@ local Worlds = {
         ["Deva"]          = 24,
     },
     ["Future City"] = {
-        -- bounds values needed — use ID button near each enemy and report
+        ["Cel Jr."]     = 4,
+        ["Android 19"]  = 5,
+        ["Android 20"]  = 6,
+        ["Android 18"]  = 7,
+        ["Android 17"]  = 14,
+        ["Cel (Prime)"] = 20,
     },
     ["Sand Village"] = {},
     ["Sky Island"]   = {},
