@@ -92,15 +92,15 @@ local function isKnownUUID(name)
     return false
 end
 
-local function enemyMatches(obj, target)
-    if type(target) == "string" then return obj.Name == target end
-    return boundsMatches(getBoundsFirst(obj), target)
-end
-
 local function getBoundsFirst(obj)
     local bounds = obj:GetAttribute("bounds")
     if not bounds then return 0 end
     return tonumber(tostring(bounds):match("^([%d%.]+)")) or 0
+end
+
+local function enemyMatches(obj, target)
+    if type(target) == "string" then return obj.Name == target end
+    return boundsMatches(getBoundsFirst(obj), target)
 end
 
 local function isEnemyModel(obj)
