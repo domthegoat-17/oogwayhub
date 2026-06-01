@@ -105,7 +105,8 @@ end
 
 local function isEnemyModel(obj)
     if not obj:IsA("Model") then return false end
-    return getBoundsFirst(obj) > 0
+    if getBoundsFirst(obj) > 0 then return true end
+    return isKnownUUID(obj.Name)
 end
 
 -- Picks the alive enemy matching targetBounds with the lowest MaxHealth (basic over boss).
@@ -118,10 +119,10 @@ local function getWeakestOfType(target)
     for _, obj in pairs(workspace:GetDescendants()) do
         if isEnemyModel(obj) then
             local dead = obj:GetAttribute("dead")
-            local hrp = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChildOfClass("BasePart")
+            local hrp = obj:FindFirstChild("HumanoidRootPart", true) or obj:FindFirstChildWhichIsA("BasePart", true)
             if dead ~= true and hrp then
                 if enemyMatches(obj, target) then
-                    local humanoid = obj:FindFirstChildOfClass("Humanoid")
+                    local humanoid = obj:FindFirstChildWhichIsA("Humanoid", true)
                     local score = humanoid and humanoid.MaxHealth
                         or (hrp.Position - root.Position).Magnitude
                     if score < bestScore then
@@ -143,9 +144,9 @@ local function getNearestAlive()
     for _, obj in pairs(workspace:GetDescendants()) do
         if isEnemyModel(obj) and not gauntletBlacklist[obj] then
             local dead = obj:GetAttribute("dead")
-            local hrp = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChildOfClass("BasePart")
+            local hrp = obj:FindFirstChild("HumanoidRootPart", true) or obj:FindFirstChildWhichIsA("BasePart", true)
             if dead ~= true and hrp then
-                local humanoid = obj:FindFirstChildOfClass("Humanoid")
+                local humanoid = obj:FindFirstChildWhichIsA("Humanoid", true)
                 if humanoid and humanoid.MaxHealth >= MAX_DUMMY_HP then continue end
                 local dist = (hrp.Position - root.Position).Magnitude
                 if dist < nearestDist then
@@ -761,7 +762,7 @@ task.spawn(function()
             end
         end
         if enemy then
-            local hrp = enemy:FindFirstChild("HumanoidRootPart") or enemy:FindFirstChildOfClass("BasePart")
+            local hrp = enemy:FindFirstChild("HumanoidRootPart", true) or enemy:FindFirstChildWhichIsA("BasePart", true)
             if hrp then
                 local charRoot = char.HumanoidRootPart
                 local dx = charRoot.Position.X - hrp.Position.X
@@ -802,7 +803,7 @@ task.spawn(function()
         for _, obj in pairs(workspace:GetDescendants()) do
             if isEnemyModel(obj) then
                 local dead = obj:GetAttribute("dead")
-                local hrp = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChildOfClass("BasePart")
+                local hrp = obj:FindFirstChild("HumanoidRootPart", true) or obj:FindFirstChildWhichIsA("BasePart", true)
                 if dead ~= true and hrp then
                     local dist = (hrp.Position - root.Position).Magnitude
                     if dist < nearestDist then
