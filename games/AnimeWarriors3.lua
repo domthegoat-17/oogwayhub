@@ -16,6 +16,7 @@ local selectedBounds = nil
 local selectedWorld = nil
 local currentWorld = nil
 local ScannedEnemies = {}
+local ScannedUUIDs = {}
 local lastScanPos = nil
 local gauntletBlacklist = {}   -- { [obj] = os.clock() expiry }
 local gauntletLastTarget = nil
@@ -31,8 +32,14 @@ local Worlds = {
         ["Paper Angel"]   = 18,
         ["Deva"]          = 24,
     },
-    -- TODO: Future City enemies need manual mapping (use identifier tool to get bounds values per enemy name)
-    ["Future City"]  = {},
+    ["Future City"] = {
+        ["Cel Jr."]     = "2b5b33dd-69a2-4ab0-926c-76cafa855c19",
+        ["Android 19"]  = "90cf9d6e-bfa9-4dfe-a2b8-7aa4cdcadb73",
+        ["Android 20"]  = "21f84a85-3e33-46ca-949d-e69b06dc7d4f",
+        ["Android 18"]  = "53b3c930-cafd-490c-82ad-dfd8f84082c8",
+        ["Android 17"]  = "f849d5b6-02ce-41f4-ae51-c349e8ffa4e3",
+        ["Cel (Prime)"] = "a388224a-7aa9-438e-94c6-6391a0045388",
+    },
     ["Sand Village"] = {},
     ["Sky Island"]   = {},
     ["Planet Nemak"] = {},
@@ -70,10 +77,24 @@ local WorldMarkers = {
 local function isKnownBounds(b)
     for _, enemies in pairs(Worlds) do
         for _, entry in pairs(enemies) do
-            if boundsMatches(b, entry) then return true end
+            if type(entry) ~= "string" and boundsMatches(b, entry) then return true end
         end
     end
     return false
+end
+
+local function isKnownUUID(name)
+    for _, enemies in pairs(Worlds) do
+        for _, entry in pairs(enemies) do
+            if entry == name then return true end
+        end
+    end
+    return false
+end
+
+local function enemyMatches(obj, target)
+    if type(target) == "string" then return obj.Name == target end
+    return boundsMatches(getBoundsFirst(obj), target)
 end
 
 local function getBoundsFirst(obj)
@@ -89,7 +110,7 @@ end
 
 -- Picks the alive enemy matching targetBounds with the lowest MaxHealth (basic over boss).
 -- Falls back to nearest distance when MaxHealth is unavailable.
-local function getWeakestOfType(targetBounds)
+local function getWeakestOfType(target)
     local char = player.Character
     if not char or not char:FindFirstChild("HumanoidRootPart") then return nil end
     local root = char.HumanoidRootPart
@@ -99,8 +120,7 @@ local function getWeakestOfType(targetBounds)
             local dead = obj:GetAttribute("dead")
             local hrp = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChildOfClass("BasePart")
             if dead ~= true and hrp then
-                local b = getBoundsFirst(obj)
-                if boundsMatches(b, targetBounds) then
+                if enemyMatches(obj, target) then
                     local humanoid = obj:FindFirstChildOfClass("Humanoid")
                     local score = humanoid and humanoid.MaxHealth
                         or (hrp.Position - root.Position).Magnitude
@@ -140,6 +160,7 @@ end
 
 local function scanWorkspace()
     local found = {}
+    local foundUUIDs = {}
     for _, obj in pairs(workspace:GetDescendants()) do
         if isEnemyModel(obj) then
             local dead = obj:GetAttribute("dead")
@@ -147,10 +168,12 @@ local function scanWorkspace()
                 local b = getBoundsFirst(obj)
                 local key = string.format("%.1f", b)
                 found[key] = (found[key] or 0) + 1
+                foundUUIDs[obj.Name] = true
             end
         end
     end
     ScannedEnemies = found
+    ScannedUUIDs = foundUUIDs
     local char = player.Character
     if char and char:FindFirstChild("HumanoidRootPart") then
         lastScanPos = char.HumanoidRootPart.Position
@@ -546,8 +569,8 @@ enemyBtn.MouseButton1Click:Connect(function()
             if isEnemyModel(obj) and obj:GetAttribute("dead") ~= true then
                 local b = getBoundsFirst(obj)
                 local key = string.format("%.1f", b)
-                if not mappedBounds[key] and not isKnownBounds(b) then
-                    local n = obj.Name
+                local n = obj.Name
+                if not mappedBounds[key] and not isKnownBounds(b) and not isKnownUUID(n) then
                     if not nameGroups[n] then
                         nameGroups[n] = { boundsSet = {}, boundsArr = {}, count = 0 }
                     end
@@ -636,14 +659,18 @@ local function detectWorld()
             local score = 0
             for _, entry in pairs(enemies) do
                 local matched = false
-                for _, knownB in ipairs(toBoundsArray(entry)) do
-                    for key in pairs(ScannedEnemies) do
-                        if math.abs((tonumber(key) or 0) - knownB) <= 1 then
-                            matched = true
-                            break
+                if type(entry) == "string" then
+                    matched = ScannedUUIDs[entry] == true
+                else
+                    for _, knownB in ipairs(toBoundsArray(entry)) do
+                        for key in pairs(ScannedEnemies) do
+                            if math.abs((tonumber(key) or 0) - knownB) <= 1 then
+                                matched = true
+                                break
+                            end
                         end
+                        if matched then break end
                     end
-                    if matched then break end
                 end
                 if matched then score += 1 end
             end
