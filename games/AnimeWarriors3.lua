@@ -199,13 +199,13 @@ sg.Parent = guiParent
 local main = Instance.new("Frame", sg)
 main.Size = UDim2.new(0, 200, 0, 260)
 main.Position = UDim2.new(0, 20, 0.3, 0)
-main.BackgroundColor3 = Color3.fromRGB(10, 18, 10)
+main.BackgroundColor3 = Color3.fromRGB(8, 15, 28)
 main.BorderSizePixel = 0
 Instance.new("UICorner", main).CornerRadius = UDim.new(0, 8)
 
 local sidePanel = Instance.new("Frame", sg)
 sidePanel.Size = UDim2.new(0, 160, 0, 0)
-sidePanel.BackgroundColor3 = Color3.fromRGB(12, 22, 12)
+sidePanel.BackgroundColor3 = Color3.fromRGB(10, 18, 32)
 sidePanel.BorderSizePixel = 0
 sidePanel.ClipsDescendants = true
 sidePanel.Visible = false
@@ -216,7 +216,7 @@ Instance.new("UIListLayout", sidePanel).SortOrder = Enum.SortOrder.LayoutOrder
 local idOverlay = Instance.new("Frame", sg)
 idOverlay.Size = UDim2.new(0, 600, 0, 160)
 idOverlay.Position = UDim2.new(0, 10, 1, -175)
-idOverlay.BackgroundColor3 = Color3.fromRGB(8, 15, 8)
+idOverlay.BackgroundColor3 = Color3.fromRGB(6, 12, 24)
 idOverlay.BackgroundTransparency = 0.1
 idOverlay.BorderSizePixel = 0
 idOverlay.Visible = false
@@ -226,7 +226,7 @@ local idHeader = Instance.new("TextLabel", idOverlay)
 idHeader.Size = UDim2.new(1, -16, 0, 32)
 idHeader.Position = UDim2.new(0, 12, 0, 8)
 idHeader.BackgroundTransparency = 1
-idHeader.TextColor3 = Color3.fromRGB(50, 255, 80)
+idHeader.TextColor3 = Color3.fromRGB(0, 200, 255)
 idHeader.Font = Enum.Font.GothamBold
 idHeader.TextSize = 18
 idHeader.TextXAlignment = Enum.TextXAlignment.Left
@@ -299,7 +299,7 @@ end)
 -- Title bar
 local titleBar = Instance.new("Frame", main)
 titleBar.Size = UDim2.new(1, 0, 0, 32)
-titleBar.BackgroundColor3 = Color3.fromRGB(5, 10, 5)
+titleBar.BackgroundColor3 = Color3.fromRGB(4, 8, 20)
 titleBar.BorderSizePixel = 0
 Instance.new("UICorner", titleBar).CornerRadius = UDim.new(0, 8)
 
@@ -316,7 +316,7 @@ title.Text = "OogwayHub 2"
 local idBtn = Instance.new("TextButton", titleBar)
 idBtn.Size = UDim2.new(0, 26, 0, 22)
 idBtn.Position = UDim2.new(1, -62, 0, 5)
-idBtn.BackgroundColor3 = Color3.fromRGB(20, 140, 20)
+idBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 220)
 idBtn.TextColor3 = Color3.new(1, 1, 1)
 idBtn.Font = Enum.Font.GothamBold
 idBtn.TextSize = 11
@@ -340,7 +340,7 @@ closeBtn.MouseButton1Click:Connect(function() sg:Destroy() end)
 local farmTabBtn = Instance.new("TextButton", main)
 farmTabBtn.Size = UDim2.new(0.5, 0, 0, 30)
 farmTabBtn.Position = UDim2.new(0, 0, 0, 32)
-farmTabBtn.BackgroundColor3 = Color3.fromRGB(30, 180, 30)
+farmTabBtn.BackgroundColor3 = Color3.fromRGB(0, 130, 255)
 farmTabBtn.TextColor3 = Color3.new(1, 1, 1)
 farmTabBtn.Font = Enum.Font.GothamBold
 farmTabBtn.TextSize = 12
@@ -350,7 +350,7 @@ farmTabBtn.BorderSizePixel = 0
 local gauntletTabBtn = Instance.new("TextButton", main)
 gauntletTabBtn.Size = UDim2.new(0.5, 0, 0, 30)
 gauntletTabBtn.Position = UDim2.new(0.5, 0, 0, 32)
-gauntletTabBtn.BackgroundColor3 = Color3.fromRGB(18, 35, 18)
+gauntletTabBtn.BackgroundColor3 = Color3.fromRGB(12, 22, 48)
 gauntletTabBtn.TextColor3 = Color3.new(1, 1, 1)
 gauntletTabBtn.Font = Enum.Font.GothamBold
 gauntletTabBtn.TextSize = 12
@@ -360,7 +360,7 @@ gauntletTabBtn.BorderSizePixel = 0
 local tabDiv = Instance.new("Frame", main)
 tabDiv.Size = UDim2.new(1, 0, 0, 1)
 tabDiv.Position = UDim2.new(0, 0, 0, 62)
-tabDiv.BackgroundColor3 = Color3.fromRGB(14, 28, 14)
+tabDiv.BackgroundColor3 = Color3.fromRGB(10, 20, 40)
 tabDiv.BorderSizePixel = 0
 
 -- Tab content frames
@@ -381,7 +381,7 @@ local function makeMainBtn(parent, text, y)
     local btn = Instance.new("TextButton", parent)
     btn.Size = UDim2.new(1, -20, 0, 30)
     btn.Position = UDim2.new(0, 10, 0, y)
-    btn.BackgroundColor3 = Color3.fromRGB(18, 35, 18)
+    btn.BackgroundColor3 = Color3.fromRGB(12, 22, 48)
     btn.TextColor3 = Color3.new(1, 1, 1)
     btn.Font = Enum.Font.Gotham
     btn.TextSize = 12
@@ -393,7 +393,7 @@ local function makeMainBtn(parent, text, y)
     arrow.Size = UDim2.new(0, 20, 1, 0)
     arrow.Position = UDim2.new(1, -22, 0, 0)
     arrow.BackgroundTransparency = 1
-    arrow.TextColor3 = Color3.fromRGB(80, 180, 80)
+    arrow.TextColor3 = Color3.fromRGB(60, 160, 255)
     arrow.Font = Enum.Font.GothamBold
     arrow.TextSize = 12
     arrow.Text = "▶"
@@ -403,7 +403,7 @@ end
 local function makeSideItem(text, onClick)
     local btn = Instance.new("TextButton", sidePanel)
     btn.Size = UDim2.new(1, 0, 0, 32)
-    btn.BackgroundColor3 = Color3.fromRGB(18, 35, 18)
+    btn.BackgroundColor3 = Color3.fromRGB(12, 22, 48)
     btn.TextColor3 = Color3.new(1, 1, 1)
     btn.Font = Enum.Font.Gotham
     btn.TextSize = 12
@@ -420,7 +420,7 @@ local function closeSide()
         if c:IsA("TextButton") then c:Destroy() end
     end
     if activeBtn then
-        activeBtn.BackgroundColor3 = Color3.fromRGB(18, 35, 18)
+        activeBtn.BackgroundColor3 = Color3.fromRGB(12, 22, 48)
         local arrow = activeBtn:FindFirstChild("Arrow")
         if arrow then arrow.Text = "▶" end
         activeBtn = nil
@@ -444,7 +444,7 @@ local function openSide(btn, buildFn)
     sidePanel.Position = UDim2.new(0, absPos.X + absSize.X + 8, 0, absPos.Y)
     sidePanel.Visible = true
     activeBtn = btn
-    btn.BackgroundColor3 = Color3.fromRGB(30, 180, 30)
+    btn.BackgroundColor3 = Color3.fromRGB(0, 130, 255)
     local arrow = btn:FindFirstChild("Arrow")
     if arrow then arrow.Text = "▼" end
 end
@@ -454,7 +454,7 @@ local worldLabel = Instance.new("TextLabel", farmContent)
 worldLabel.Size = UDim2.new(1, -20, 0, 18)
 worldLabel.Position = UDim2.new(0, 10, 0, 8)
 worldLabel.BackgroundTransparency = 1
-worldLabel.TextColor3 = Color3.fromRGB(80, 180, 80)
+worldLabel.TextColor3 = Color3.fromRGB(60, 160, 255)
 worldLabel.Font = Enum.Font.Gotham
 worldLabel.TextSize = 10
 worldLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -466,7 +466,7 @@ local enemyLabel = Instance.new("TextLabel", farmContent)
 enemyLabel.Size = UDim2.new(1, -20, 0, 18)
 enemyLabel.Position = UDim2.new(0, 10, 0, 66)
 enemyLabel.BackgroundTransparency = 1
-enemyLabel.TextColor3 = Color3.fromRGB(80, 180, 80)
+enemyLabel.TextColor3 = Color3.fromRGB(60, 160, 255)
 enemyLabel.Font = Enum.Font.Gotham
 enemyLabel.TextSize = 10
 enemyLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -477,7 +477,7 @@ local enemyBtn = makeMainBtn(farmContent, "Select Enemy", 84)
 local farmBtn = Instance.new("TextButton", farmContent)
 farmBtn.Size = UDim2.new(1, -20, 0, 34)
 farmBtn.Position = UDim2.new(0, 10, 0, 128)
-farmBtn.BackgroundColor3 = Color3.fromRGB(14, 28, 14)
+farmBtn.BackgroundColor3 = Color3.fromRGB(10, 20, 40)
 farmBtn.TextColor3 = Color3.new(1, 1, 1)
 farmBtn.Font = Enum.Font.GothamBold
 farmBtn.TextSize = 13
@@ -490,7 +490,7 @@ local gauntletInfo = Instance.new("TextLabel", gauntletContent)
 gauntletInfo.Size = UDim2.new(1, -20, 0, 60)
 gauntletInfo.Position = UDim2.new(0, 10, 0, 8)
 gauntletInfo.BackgroundTransparency = 1
-gauntletInfo.TextColor3 = Color3.fromRGB(80, 180, 80)
+gauntletInfo.TextColor3 = Color3.fromRGB(60, 160, 255)
 gauntletInfo.Font = Enum.Font.Gotham
 gauntletInfo.TextSize = 11
 gauntletInfo.TextXAlignment = Enum.TextXAlignment.Left
@@ -500,7 +500,7 @@ gauntletInfo.Text = "Targets all alive enemies.\nNo selection needed.\nGood for 
 local gauntletBtn = Instance.new("TextButton", gauntletContent)
 gauntletBtn.Size = UDim2.new(1, -20, 0, 34)
 gauntletBtn.Position = UDim2.new(0, 10, 0, 78)
-gauntletBtn.BackgroundColor3 = Color3.fromRGB(14, 28, 14)
+gauntletBtn.BackgroundColor3 = Color3.fromRGB(10, 20, 40)
 gauntletBtn.TextColor3 = Color3.new(1, 1, 1)
 gauntletBtn.Font = Enum.Font.GothamBold
 gauntletBtn.TextSize = 13
@@ -512,8 +512,8 @@ Instance.new("UICorner", gauntletBtn).CornerRadius = UDim.new(0, 6)
 local function showTab(tab)
     farmContent.Visible = (tab == "farm")
     gauntletContent.Visible = (tab == "gauntlet")
-    farmTabBtn.BackgroundColor3 = tab == "farm" and Color3.fromRGB(30, 180, 30) or Color3.fromRGB(18, 35, 18)
-    gauntletTabBtn.BackgroundColor3 = tab == "gauntlet" and Color3.fromRGB(30, 180, 30) or Color3.fromRGB(18, 35, 18)
+    farmTabBtn.BackgroundColor3 = tab == "farm" and Color3.fromRGB(0, 130, 255) or Color3.fromRGB(12, 22, 48)
+    gauntletTabBtn.BackgroundColor3 = tab == "gauntlet" and Color3.fromRGB(0, 130, 255) or Color3.fromRGB(12, 22, 48)
     closeSide()
 end
 
@@ -612,10 +612,10 @@ farmBtn.MouseButton1Click:Connect(function()
     autoFarm = not autoFarm
     if autoFarm then
         gauntletFarm = false
-        gauntletBtn.BackgroundColor3 = Color3.fromRGB(14, 28, 14)
+        gauntletBtn.BackgroundColor3 = Color3.fromRGB(10, 20, 40)
         gauntletBtn.Text = "Gauntlet: OFF"
     end
-    farmBtn.BackgroundColor3 = autoFarm and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(14, 28, 14)
+    farmBtn.BackgroundColor3 = autoFarm and Color3.fromRGB(0, 150, 255) or Color3.fromRGB(10, 20, 40)
     farmBtn.Text = autoFarm and "Auto Farm: ON" or "Auto Farm: OFF"
 end)
 
@@ -624,10 +624,10 @@ gauntletBtn.MouseButton1Click:Connect(function()
     gauntletFarm = not gauntletFarm
     if gauntletFarm then
         autoFarm = false
-        farmBtn.BackgroundColor3 = Color3.fromRGB(14, 28, 14)
+        farmBtn.BackgroundColor3 = Color3.fromRGB(10, 20, 40)
         farmBtn.Text = "Auto Farm: OFF"
     end
-    gauntletBtn.BackgroundColor3 = gauntletFarm and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(14, 28, 14)
+    gauntletBtn.BackgroundColor3 = gauntletFarm and Color3.fromRGB(0, 150, 255) or Color3.fromRGB(10, 20, 40)
     gauntletBtn.Text = gauntletFarm and "Gauntlet: ON" or "Gauntlet: OFF"
 end)
 
@@ -786,8 +786,8 @@ idBtn.MouseButton1Click:Connect(function()
     idVisible = not idVisible
     idOverlay.Visible = idVisible
     idBtn.BackgroundColor3 = idVisible
-        and Color3.fromRGB(50, 220, 50)
-        or  Color3.fromRGB(20, 140, 20)
+        and Color3.fromRGB(0, 180, 255)
+        or  Color3.fromRGB(0, 100, 220)
 end)
 
 -- Identifier overlay update loop
