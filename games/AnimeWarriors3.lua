@@ -310,7 +310,7 @@ title.TextColor3 = Color3.new(1, 1, 1)
 title.Font = Enum.Font.GothamBold
 title.TextSize = 14
 title.TextXAlignment = Enum.TextXAlignment.Left
-title.Text = "OogwayHub"
+title.Text = "OogwayHub 2"
 
 local idBtn = Instance.new("TextButton", titleBar)
 idBtn.Size = UDim2.new(0, 26, 0, 22)
