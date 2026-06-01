@@ -2,7 +2,7 @@ local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 
-local TELEPORT_RANGE = 6
+local TELEPORT_RANGE = 10
 local SCAN_THRESHOLD = 200
 local TELEPORT_DETECT = 50
 local MAX_DUMMY_HP = 1e8       -- skip invincible/infinite-HP targets like DPS dummies
@@ -763,9 +763,17 @@ task.spawn(function()
         if enemy then
             local hrp = enemy:FindFirstChild("HumanoidRootPart") or enemy:FindFirstChildOfClass("BasePart")
             if hrp then
-                local dist = (char.HumanoidRootPart.Position - hrp.Position).Magnitude
-                if dist > TELEPORT_RANGE then
-                    char.HumanoidRootPart.CFrame = hrp.CFrame * CFrame.new(0, 0, 3)
+                local charRoot = char.HumanoidRootPart
+                local dx = charRoot.Position.X - hrp.Position.X
+                local dz = charRoot.Position.Z - hrp.Position.Z
+                if math.sqrt(dx*dx + dz*dz) > TELEPORT_RANGE then
+                    local rayParams = RaycastParams.new()
+                    rayParams.FilterDescendantsInstances = {char, enemy}
+                    rayParams.FilterType = Enum.RaycastFilterType.Exclude
+                    local scanOrigin = Vector3.new(hrp.Position.X, hrp.Position.Y + 50, hrp.Position.Z + 3)
+                    local rayResult = workspace:Raycast(scanOrigin, Vector3.new(0, -120, 0), rayParams)
+                    local groundY = rayResult and (rayResult.Position.Y + 3) or hrp.Position.Y
+                    charRoot.CFrame = CFrame.new(hrp.Position.X, groundY, hrp.Position.Z + 3)
                 end
             end
         end
