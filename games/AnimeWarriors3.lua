@@ -2,7 +2,7 @@ local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 
-local TELEPORT_RANGE = 10
+local TELEPORT_RANGE = 2
 local SCAN_THRESHOLD = 200
 local TELEPORT_DETECT = 50
 local MAX_DUMMY_HP = 1e8       -- skip invincible/infinite-HP targets like DPS dummies
@@ -132,39 +132,20 @@ local function getWeakestOfType(target)
     if not char or not char:FindFirstChild("HumanoidRootPart") then return nil end
     local root = char.HumanoidRootPart
     local best, bestScore = nil, math.huge
-    local dbg = (target == 14 or target == 20)
-    if dbg then print("[DBG] getWeakestOfType target=" .. tostring(target) .. " cacheSize=" .. #getEnemyCache()) end
     for _, obj in ipairs(getEnemyCache()) do
         if obj.Parent then
             local dead = obj:GetAttribute("dead")
-            local b = getBoundsFirst(obj)
             local hrp = obj:FindFirstChild("HumanoidRootPart", true) or obj:FindFirstChildWhichIsA("BasePart", true)
-            local matches = enemyMatches(obj, target)
-            if dbg then
-                print(string.format("  [cand] name=%s bounds=%.2f dead=%s hrp=%s matches=%s",
-                    obj.Name, b, tostring(dead), tostring(hrp ~= nil), tostring(matches)))
-            end
-            if dead ~= true and hrp and matches then
+            if dead ~= true and hrp and enemyMatches(obj, target) then
                 local humanoid = obj:FindFirstChildWhichIsA("Humanoid", true)
                 local maxHP = humanoid and humanoid.MaxHealth
                 local score = (maxHP and maxHP < math.huge and maxHP)
                     or (hrp.Position - root.Position).Magnitude
-                if dbg then
-                    print(string.format("    [score] maxHP=%s score=%.2f bestScore=%.2f",
-                        tostring(maxHP), score, bestScore))
-                end
                 if score < bestScore then
                     best = obj
                     bestScore = score
                 end
             end
-        end
-    end
-    if dbg then
-        if best then
-            print("[DBG] selected=" .. best.Name .. " score=" .. tostring(bestScore))
-        else
-            print("[DBG] NO TARGET FOUND")
         end
     end
     return best
@@ -794,36 +775,22 @@ task.spawn(function()
         end
         if enemy then
             local hrp = enemy:FindFirstChild("HumanoidRootPart", true) or enemy:FindFirstChildWhichIsA("BasePart", true)
-            local dbgTP = (selectedBounds == 14 or selectedBounds == 20)
-            if not hrp then
-                if dbgTP then print("[DBG] hrp=nil on selected enemy=" .. enemy.Name) end
-            else
+            if hrp then
                 local charRoot = char.HumanoidRootPart
-                local dx = charRoot.Position.X - hrp.Position.X
-                local dz = charRoot.Position.Z - hrp.Position.Z
-                local hDist = math.sqrt(dx*dx + dz*dz)
-                if dbgTP then
-                    print(string.format("[DBG] TP enemy=%s hrpPos=(%.1f,%.1f,%.1f) hDist=%.1f",
-                        enemy.Name, hrp.Position.X, hrp.Position.Y, hrp.Position.Z, hDist))
-                end
-                if hDist > TELEPORT_RANGE then
+                local b = getBoundsFirst(enemy)
+                local zOffset = math.max(3, b * 0.5 + 2)
+                local tdx = charRoot.Position.X - hrp.Position.X
+                local tdz = charRoot.Position.Z - (hrp.Position.Z + zOffset)
+                if math.sqrt(tdx*tdx + tdz*tdz) > TELEPORT_RANGE then
                     local rayParams = RaycastParams.new()
                     rayParams.FilterDescendantsInstances = {char, enemy}
                     rayParams.FilterType = Enum.RaycastFilterType.Exclude
-                    local scanOrigin = Vector3.new(hrp.Position.X, hrp.Position.Y + 50, hrp.Position.Z + 3)
+                    local scanOrigin = Vector3.new(hrp.Position.X, hrp.Position.Y + 50, hrp.Position.Z + zOffset)
                     local rayResult = workspace:Raycast(scanOrigin, Vector3.new(0, -120, 0), rayParams)
                     local groundY = rayResult and (rayResult.Position.Y + 3) or hrp.Position.Y
-                    charRoot.CFrame = CFrame.new(hrp.Position.X, groundY, hrp.Position.Z + 3)
-                    if dbgTP then
-                        print(string.format("[DBG] teleported -> (%.1f,%.1f,%.1f) groundY=%.1f rayHit=%s",
-                            hrp.Position.X, groundY, hrp.Position.Z + 3, groundY, tostring(rayResult ~= nil)))
-                    end
-                elseif dbgTP then
-                    print("[DBG] within range, no TP. hDist=" .. string.format("%.1f", hDist))
+                    charRoot.CFrame = CFrame.new(hrp.Position.X, groundY, hrp.Position.Z + zOffset)
                 end
             end
-        elseif selectedBounds == 14 or selectedBounds == 20 then
-            print("[DBG] getWeakestOfType returned nil")
         end
     end
 end)
