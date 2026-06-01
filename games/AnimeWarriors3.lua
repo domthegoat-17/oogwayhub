@@ -22,6 +22,9 @@ local gauntletBlacklist = {}   -- { [obj] = os.clock() expiry }
 local gauntletLastTarget = nil
 local gauntletStuckTime = 0
 local idVisible = false
+local enemyCache = {}
+local enemyCacheTime = 0
+local CACHE_TTL = 1.0
 
 local Worlds = {
     ["Rain Village"] = {
@@ -33,12 +36,7 @@ local Worlds = {
         ["Deva"]          = 24,
     },
     ["Future City"] = {
-        ["Cel Jr."]     = "2b5b33dd-69a2-4ab0-926c-76cafa855c19",
-        ["Android 19"]  = "90cf9d6e-bfa9-4dfe-a2b8-7aa4cdcadb73",
-        ["Android 20"]  = "21f84a85-3e33-46ca-949d-e69b06dc7d4f",
-        ["Android 18"]  = "53b3c930-cafd-490c-82ad-dfd8f84082c8",
-        ["Android 17"]  = "f849d5b6-02ce-41f4-ae51-c349e8ffa4e3",
-        ["Cel (Prime)"] = "a388224a-7aa9-438e-94c6-6391a0045388",
+        -- bounds values needed — use ID button near each enemy and report
     },
     ["Sand Village"] = {},
     ["Sky Island"]   = {},
@@ -109,15 +107,28 @@ local function isEnemyModel(obj)
     return isKnownUUID(obj.Name)
 end
 
--- Picks the alive enemy matching targetBounds with the lowest MaxHealth (basic over boss).
--- Falls back to nearest distance when MaxHealth is unavailable.
+local function getEnemyCache()
+    local now = os.clock()
+    if now - enemyCacheTime >= CACHE_TTL then
+        enemyCacheTime = now
+        local list = {}
+        for _, obj in pairs(workspace:GetDescendants()) do
+            if isEnemyModel(obj) then
+                table.insert(list, obj)
+            end
+        end
+        enemyCache = list
+    end
+    return enemyCache
+end
+
 local function getWeakestOfType(target)
     local char = player.Character
     if not char or not char:FindFirstChild("HumanoidRootPart") then return nil end
     local root = char.HumanoidRootPart
     local best, bestScore = nil, math.huge
-    for _, obj in pairs(workspace:GetDescendants()) do
-        if isEnemyModel(obj) then
+    for _, obj in ipairs(getEnemyCache()) do
+        if obj.Parent then
             local dead = obj:GetAttribute("dead")
             local hrp = obj:FindFirstChild("HumanoidRootPart", true) or obj:FindFirstChildWhichIsA("BasePart", true)
             if dead ~= true and hrp then
@@ -141,8 +152,8 @@ local function getNearestAlive()
     if not char or not char:FindFirstChild("HumanoidRootPart") then return nil end
     local root = char.HumanoidRootPart
     local nearest, nearestDist = nil, math.huge
-    for _, obj in pairs(workspace:GetDescendants()) do
-        if isEnemyModel(obj) and not gauntletBlacklist[obj] then
+    for _, obj in ipairs(getEnemyCache()) do
+        if obj.Parent and not gauntletBlacklist[obj] then
             local dead = obj:GetAttribute("dead")
             local hrp = obj:FindFirstChild("HumanoidRootPart", true) or obj:FindFirstChildWhichIsA("BasePart", true)
             if dead ~= true and hrp then
@@ -727,7 +738,7 @@ player.CharacterAdded:Connect(onCharacterAdded)
 -- Farm loop
 task.spawn(function()
     while true do
-        task.wait(0.1)
+        task.wait(0.2)
         local char = player.Character
         if not char or not char:FindFirstChild("HumanoidRootPart") then continue end
         local enemy = nil
@@ -740,7 +751,7 @@ task.spawn(function()
             enemy = getNearestAlive()
             if enemy then
                 if enemy == gauntletLastTarget then
-                    gauntletStuckTime += 0.1
+                    gauntletStuckTime += 0.2
                     if gauntletStuckTime >= STUCK_TIMEOUT then
                         gauntletBlacklist[enemy] = os.clock() + BLACKLIST_DURATION
                         gauntletLastTarget = nil
@@ -756,10 +767,7 @@ task.spawn(function()
                 gauntletStuckTime = 0
             end
         elseif autoFarm and selectedBounds then
-            local worldOk = currentWorld == nil or currentWorld == selectedWorld
-            if worldOk then
-                enemy = getWeakestOfType(selectedBounds)
-            end
+            enemy = getWeakestOfType(selectedBounds)
         end
         if enemy then
             local hrp = enemy:FindFirstChild("HumanoidRootPart", true) or enemy:FindFirstChildWhichIsA("BasePart", true)
@@ -800,8 +808,8 @@ task.spawn(function()
         local root = char.HumanoidRootPart
 
         local nearest, nearestDist = nil, math.huge
-        for _, obj in pairs(workspace:GetDescendants()) do
-            if isEnemyModel(obj) then
+        for _, obj in ipairs(getEnemyCache()) do
+            if obj.Parent then
                 local dead = obj:GetAttribute("dead")
                 local hrp = obj:FindFirstChild("HumanoidRootPart", true) or obj:FindFirstChildWhichIsA("BasePart", true)
                 if dead ~= true and hrp then
@@ -818,8 +826,8 @@ task.spawn(function()
             local b = getBoundsFirst(nearest)
             local nameStr = nearest.Name
             local count = 0
-            for _, obj in pairs(workspace:GetDescendants()) do
-                if isEnemyModel(obj) and math.abs(getBoundsFirst(obj) - b) < 1 then
+            for _, obj in ipairs(getEnemyCache()) do
+                if obj.Parent and math.abs(getBoundsFirst(obj) - b) < 1 then
                     count += 1
                 end
             end
