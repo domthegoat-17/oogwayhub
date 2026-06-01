@@ -29,7 +29,7 @@ local Worlds = {
         ["Instinct"]      = 5.4,
         ["Enlightenment"] = 7,
         ["Demon"]         = 9,
-        ["Paper Angel"]   = 18,
+        ["Paper Angel"]   = 30,
         ["Deva"]          = 24,
     },
     ["Future City"] = {
