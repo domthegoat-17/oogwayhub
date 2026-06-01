@@ -739,6 +739,40 @@ local function onCharacterAdded()
 end
 player.CharacterAdded:Connect(onCharacterAdded)
 
+-- Detection diagnostics (fires every 5s while farming is active)
+task.spawn(function()
+    while true do
+        task.wait(5)
+        if not autoFarm and not gauntletFarm then continue end
+        local cacheAge = os.clock() - enemyCacheTime
+        local cache = getEnemyCache()
+        local total = #cache
+        local matching, deadCount, noHrp = 0, 0, 0
+        local nearestDist = math.huge
+        local char = player.Character
+        local root = char and char:FindFirstChild("HumanoidRootPart")
+        for _, obj in ipairs(cache) do
+            if not obj.Parent then continue end
+            local dead = obj:GetAttribute("dead")
+            local hrp = obj:FindFirstChild("HumanoidRootPart", true) or obj:FindFirstChildWhichIsA("BasePart", true)
+            if dead == true then deadCount += 1 end
+            if not hrp then noHrp += 1 end
+            if autoFarm and enemyMatches(obj, selectedBounds) then
+                matching += 1
+                if root and hrp then
+                    local d = (root.Position - hrp.Position).Magnitude
+                    if d < nearestDist then nearestDist = d end
+                end
+            end
+        end
+        local nearStr = nearestDist == math.huge and "none" or string.format("%.1f", nearestDist)
+        print(string.format(
+            "[SCAN] streaming=%s cacheAge=%.2fs total=%d matching=%d dead=%d noHrp=%d nearest=%s target=%s",
+            tostring(workspace.StreamingEnabled), cacheAge, total, matching,
+            deadCount, noHrp, nearStr, tostring(selectedBounds)))
+    end
+end)
+
 -- Farm loop
 task.spawn(function()
     while true do
